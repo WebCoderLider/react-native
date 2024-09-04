@@ -1,70 +1,103 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react'
+import {
+	Alert,
+	BackHandler,
+	Button,
+	Modal,
+	StyleSheet,
+	Text,
+	TextInput,
+	View,
+} from 'react-native'
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const App = () => {
+	const [isModalVisible, setIsModalVisible] = useState(false)
+	const [pin, setPin] = useState('')
+	const correctPin = '1234' // PIN kod
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+	useEffect(() => {
+		const backAction = () => {
+			// Power off tugmasi bosilganda bu modalni ochish
+			setIsModalVisible(true)
+			return true // Bu qaytarish ishni to'xtatadi va boshqa dasturga o'tishga imkon bermaydi
+		}
+
+		const backHandler = BackHandler.addEventListener(
+			'hardwareBackPress',
+			backAction
+		)
+		return () => backHandler.remove()
+	}, [])
+
+	const handlePinSubmit = () => {
+		if (pin === correctPin) {
+			Alert.alert('Success', 'Access granted')
+			setIsModalVisible(false)
+		} else {
+			Alert.alert('Error', 'Incorrect PIN')
+			setPin('')
+		}
+	}
+
+	return (
+		<View style={styles.container}>
+			<Modal
+				transparent={true}
+				animationType='slide'
+				visible={isModalVisible}
+				onRequestClose={() => setIsModalVisible(false)}
+			>
+				<View style={styles.modalContainer}>
+					<View style={styles.modalContent}>
+						<Text style={styles.title}>Enter PIN to Access</Text>
+						<TextInput
+							style={styles.input}
+							secureTextEntry
+							placeholder='Enter PIN'
+							keyboardType='numeric'
+							value={pin}
+							onChangeText={setPin}
+						/>
+						<Button title='Submit' onPress={handlePinSubmit} />
+					</View>
+				</View>
+			</Modal>
+		</View>
+	)
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: 16,
+	},
+	title: {
+		fontSize: 18,
+		marginBottom: 16,
+	},
+	input: {
+		height: 40,
+		borderColor: '#ddd',
+		borderWidth: 1,
+		marginBottom: 16,
+		width: '100%',
+		paddingHorizontal: 8,
+	},
+	modalContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: 'rgba(0,0,0,0.5)',
+	},
+	modalContent: {
+		backgroundColor: 'white',
+		padding: 20,
+		borderRadius: 10,
+		width: '80%',
+		alignItems: 'center',
+	},
+})
+
+export default App
